@@ -1,0 +1,7 @@
+*.log
+cache/
+.venv
+.vscode
+conf_dev.py
+conf_prod.py
+__pycache__
