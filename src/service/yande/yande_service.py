@@ -1,4 +1,5 @@
 import os
+import traceback
 from typing import Any, Callable, Dict, List, Set, Tuple
 from src.model.constant import CACHE_PATH_IMAGES
 from src.http.http_client import HttpClient, get_http_client
@@ -42,22 +43,26 @@ class SearchImage(Servicer):
 
         results = await self.http_client.url(f"https://yande.re/post/popular_recent.json?limit=5&page=1").get()
         for r in sample(results, 5):
-            file_name = r['md5'] + ".jpg"
-            if os.path.exists(CACHE_YANDE + file_name):
-                with open(CACHE_YANDE + file_name, "rb+") as f:
-                    images.append(f.read())
-            else:
-                images.append(await self.http_client.url(r["jpeg_url"]).get_bytes())
-            
-            
-            if not os.path.exists(CACHE_YANDE):
-                os.makedirs(CACHE_YANDE)
-            
-            with open(CACHE_YANDE + file_name, "wb+") as f:
-                f.write(images[-1])
-            
-            await message.reply(file_image=images[-1])
-            if len(images) == 5:
-                break
+            try:
+                await self._handle_yande(r, images, message)
+            except Exception as e:
+                logger.error(f"处理 Yande 功能异常: {e}\n{traceback.format_exc()}")
             
         return
+    
+    async def _handle_yande(self, r: Dict, images: List[bytes], message: DirectMessage):
+        file_name = r['md5'] + ".jpg"
+        if os.path.exists(CACHE_YANDE + file_name):
+            with open(CACHE_YANDE + file_name, "rb+") as f:
+                images.append(f.read())
+        else:
+            images.append(await self.http_client.url(r["jpeg_url"]).get_bytes())
+        
+        
+        if not os.path.exists(CACHE_YANDE):
+            os.makedirs(CACHE_YANDE)
+        
+        with open(CACHE_YANDE + file_name, "wb+") as f:
+            f.write(images[-1])
+        
+        await message.reply(file_image=images[-1])
