@@ -2,7 +2,7 @@ from typing import List
 import botpy
 from config.conf import CONF
 from src.http.http_client import get_http_client
-from src.service.search_image.search_image import SearchImage
+from src.service.yande.yande_service import SearchImage
 from src.service.servicer import Servicer
 
 from src.louise.client import get_louise_client
