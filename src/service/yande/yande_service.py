@@ -42,8 +42,13 @@ class SearchImage(Servicer):
 
         results = await self.http_client.url(f"https://yande.re/post/popular_recent.json?limit=5&page=1").get()
         for r in sample(results, 5):
-            images.append(await self.http_client.url(r["jpeg_url"]).get_bytes())
             file_name = r['md5'] + ".jpg"
+            if os.path.exists(CACHE_YANDE + file_name):
+                with open(CACHE_YANDE + file_name, "rb+") as f:
+                    images.append(f.read())
+            else:
+                images.append(await self.http_client.url(r["jpeg_url"]).get_bytes())
+            
             
             if not os.path.exists(CACHE_YANDE):
                 os.makedirs(CACHE_YANDE)
@@ -51,9 +56,8 @@ class SearchImage(Servicer):
             with open(CACHE_YANDE + file_name, "wb+") as f:
                 f.write(images[-1])
             
+            await message.reply(file_image=images[-1])
             if len(images) == 5:
                 break
-        
-        for image in images:
-            await message.reply(file_image=image)
+            
         return
