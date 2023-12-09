@@ -8,6 +8,7 @@ from src.service.servicer import Servicer
 from botpy import logger
 from botpy.message import DirectMessage
 from src.http.http_client import get_http_client
+from random import sample
 
 CACHE_YANDE: str = CACHE_PATH_IMAGES + "yande/"
 
@@ -40,7 +41,7 @@ class SearchImage(Servicer):
         images: List[bytes] = []
 
         results = await self.http_client.url(f"https://yande.re/post/popular_recent.json?limit=5&page=1").get()
-        for r in results:
+        for r in sample(results, 5):
             images.append(await self.http_client.url(r["jpeg_url"]).get_bytes())
             file_name = r['md5'] + ".jpg"
             
@@ -54,5 +55,5 @@ class SearchImage(Servicer):
                 break
         
         for image in images:
-            await message.reply(content="这是你搜索的图片", file_image=image)
+            await message.reply(file_image=image)
         return
