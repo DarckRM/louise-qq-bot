@@ -72,7 +72,12 @@ class BooruImage(Servicer):
         
         for image in images:
             sample = f"作者: {image['author']}\n标签: {image['tags']}"
-            await message.reply(content=sample, file_image=image["image"])
+            try:
+                await message.reply(content=sample, file_image=image["image"])
+            except Exception as e:
+                logger.error(f"发送消息失败: {e}\n{traceback.format_exc()}")
+        
+        await message.reply(content=f"你的请求参数 {cn_names}, 本次共返回 {len(images)} 张图片")
 
             
     async def _search_yande_image(self, url: str, cn_names: List[str], limit: int = 5, page: int = 1) -> List[Dict]:
@@ -97,8 +102,6 @@ class BooruImage(Servicer):
                 break
             count += 1
             louise_images.append(self._build_booru_image(r))
-            if r['file_size'] > 3255538:
-                continue
             try:
                 images.append({
                     "author": r["author"],
