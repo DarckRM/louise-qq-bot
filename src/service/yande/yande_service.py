@@ -19,14 +19,14 @@ class BooruImage(Servicer):
 
     def __init__(self) -> None:
         self.feature_map: Dict[str, Tuple[FeatureType, Callable]] = {}
-        self.feature_map["find"] = (FeatureType.ASYNC, self._find)
         self.feature_map["yande"] = (FeatureType.SYNC, self._yande)
 
         self.http_client = get_http_client()
     
     
     def name(self) -> str:
-        return "search_image"
+        return "booru_images"
+
 
     def get_feature(self, feature_name: str) -> (FeatureType, Callable):
         feature_type, feature = self.feature_map.get(feature_name, (None, None))
@@ -35,10 +35,7 @@ class BooruImage(Servicer):
             return None, None
         return feature_type, feature
     
-    async def _find(self, message: DirectMessage):
-        logger.info("调用了 find 功能")
 
-    
     async def _yande(self, message: DirectMessage):
         logger.info("调用了 random_setu 功能")
         images: List[bytes] = []
