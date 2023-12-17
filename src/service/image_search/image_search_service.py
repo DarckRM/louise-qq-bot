@@ -1,5 +1,5 @@
 from service.servicer import Servicer
 
 
-class ImageSearch(Servicer):
+class SauceNAO(Servicer):
     pass
