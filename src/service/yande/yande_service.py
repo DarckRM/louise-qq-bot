@@ -124,6 +124,7 @@ class BooruImage(Servicer):
         if os.path.exists(CACHE_YANDE + sample_name):
             with open(CACHE_YANDE + sample_name, "rb+") as f:
                 sample_image = f.read()
+                return sample_image
         else:
             image = await self.http_client.url(r["file_url"]).get_bytes()
             sample_image = await self.http_client.url(r["sample_url"]).get_bytes()
