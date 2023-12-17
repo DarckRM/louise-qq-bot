@@ -46,7 +46,7 @@ class BooruImage(Servicer):
         else:
             url = "https://yande.re/post.json?"
 
-        page_nation: List[int] = [5, 1]        
+        page_nation: List[int] = [1, 5]        
         cn_names: List[str] = []
         page_index = 0
         content_array: List[str] = content.split(' ')
@@ -77,7 +77,7 @@ class BooruImage(Servicer):
         await message.reply(content=f"你的请求参数 {cn_names}, 本次共返回 {len(images)} 张图片")
 
             
-    async def _search_yande_image(self, url: str, cn_names: List[str], limit: int = 5, page: int = 1) -> List[Dict]:
+    async def _search_yande_image(self, url: str, cn_names: List[str], page: int = 1, limit: int = 5) -> List[Dict]:
         tags: str = ""
         images: List[Dict] = []
         louise_images: List[LouiseBooruImage] = []
