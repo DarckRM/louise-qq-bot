@@ -116,20 +116,27 @@ class BooruImage(Servicer):
     
     async def _handle_yande_result(self, r: Dict):
         image: bytes
-        file_name = r['md5'] + ".jpg"
-        if os.path.exists(CACHE_YANDE + file_name):
-            with open(CACHE_YANDE + file_name, "rb+") as f:
-                image = f.read()
+        sample_image: bytes
+
+        file_name = f"{r['md5']}.{r['file_ext']} "
+        sample_name = f"{r['md5']}.jpg "
+
+        if os.path.exists(CACHE_YANDE + sample_name):
+            with open(CACHE_YANDE + sample_name, "rb+") as f:
+                sample_image = f.read()
         else:
-            image = await self.http_client.url(r["jpeg_url"]).get_bytes()
+            image = await self.http_client.url(r["file_url"]).get_bytes()
+            sample_image = await self.http_client.url(r["sample_url"]).get_bytes()
         
         if not os.path.exists(CACHE_YANDE):
             os.makedirs(CACHE_YANDE)
         
         with open(CACHE_YANDE + file_name, "wb+") as f:
             f.write(image)
+        with open(CACHE_YANDE + sample_name, "wb+") as f:
+            f.write(sample_image)
         
-        return image
+        return sample_image
         
         
     def _build_booru_image(self, r: Dict) -> LouiseBooruImage:
