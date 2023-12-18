@@ -1,15 +1,19 @@
 import os
 import traceback
 from typing import Any, Callable, Dict, List, Set, Tuple
+
+from DownloadKit.mission import Mission
 from src.model.db_model import LouiseBooruImage
 from src.db.mysql.database import LousieDatabase, get_database
-from src.model.constant import CACHE_PATH_IMAGES
+from src.model.constant import CACHE_PATH, CACHE_PATH_IMAGES
 from src.http.http_client import get_http_client
 
 from src.model.enum import FeatureType
 from src.service.servicer import Servicer
 from botpy import logger
 from botpy.message import DirectMessage
+
+from src.utils.file_api import get_file_api
 
 CACHE_YANDE: str = CACHE_PATH_IMAGES + "yande/"
 
@@ -22,6 +26,7 @@ class BooruImage(Servicer):
         self.feature_map["yande"] = (FeatureType.SYNC, self._yande)
 
         self.http_client = get_http_client()
+        self.file_api = get_file_api()
     
     
     def name(self) -> str:
@@ -61,7 +66,7 @@ class BooruImage(Servicer):
             else:
                 cn_names.append(word)
 
-        images = await self._search_yande_image(url, cn_names, page_nation[0], page_nation[1])
+        images, image_urls = await self._search_yande_image(url, cn_names, page_nation[0], page_nation[1])
 
         if not images:
             await message.reply(content="由于图片过大或某些意外无法发送图片哦")
@@ -76,8 +81,12 @@ class BooruImage(Servicer):
         
         await message.reply(content=f"你的请求参数 {cn_names}, 本次共返回 {len(images)} 张图片")
 
+        logger.info("开始下载原图")
+        self.file_api.download_images(image_urls, "yande/")
+        logger.info("已下载完毕")
+
             
-    async def _search_yande_image(self, url: str, cn_names: List[str], page: int = 1, limit: int = 5) -> List[Dict]:
+    async def _search_yande_image(self, url: str, cn_names: List[str], page: int = 1, limit: int = 5) -> (List[Dict], List[Tuple]):
         tags: str = ""
         images: List[Dict] = []
         louise_images: List[LouiseBooruImage] = []
@@ -93,25 +102,34 @@ class BooruImage(Servicer):
         logger.info(f"请求: {url}")
 
         results = await self.http_client.url(url).get()
-        count = 0
+
+        sample_urls: List[Tuple] = []
+        image_urls: List[Tuple] = []
         for r in results:
-            if count == 10:
-                break
-            count += 1
             louise_images.append(self._build_booru_image(r))
+            image_urls.append((r["file_url"], r["md5"]))
+            sample_urls.append((r["sample_url"], r["md5"]))
+
+        # 先下载 sample 返回, 然后下载原图
+        missions: List[Mission] = self.file_api.download_images(sample_urls, "sample/yande/")
+
+        for m in missions:
+            image = await self.file_api.read_file("images/sample/yande/", m.file_name)
+            if not image:
+                continue
             try:
                 images.append({
                     "author": r["author"],
                     "tags": r["tags"],
                     "url": r["file_url"][8:],
                     "source": r["source"][8:],
-                    "image": await self._handle_yande_result(r)
+                    "image": image
                 })
             except Exception as e:
                 logger.error(f"处理 Yande 功能异常: {e}\n{traceback.format_exc()}")
 
         db.save_booru_image(louise_images)
-        return images
+        return images, image_urls
 
     
     async def _handle_yande_result(self, r: Dict):

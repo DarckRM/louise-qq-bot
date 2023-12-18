@@ -8,7 +8,9 @@ from src.service.servicer import Servicer
 
 from src.louise.client import get_louise_client
 from src.utils.logger import DEFAULT_FILE_HANDLER, DEFAULT_PRINT_FORMAT
+from src.utils.file_api import get_file_api
 
+file_api = get_file_api(CONF["proxy"])
 http_client = get_http_client(CONF["proxy"])
 
 intends = botpy.Intents(direct_message=True)
