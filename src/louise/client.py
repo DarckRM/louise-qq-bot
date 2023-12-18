@@ -38,23 +38,25 @@ class LouiseClient(botpy.Client):
                 guild_id=message.guild_id,
                 message_id=message.id,
                 handler="direct_message_handler",
-                service="search_image",
+                service="saucenao",
                 feature=content
             )
             await message.reply(content=f"请发送你需要搜索的图片吧")
-        if "yande" in content:
-            self.direct_message_handler.waiting_session[user.id] = WaitingSession(
-                user_id=user.id,
-                guild_id=message.guild_id,
-                message_id=message.id,
-                handler="direct_message_handler",
-                service="search_image",
-                feature="yande"
-            )
-            await message.reply(content=f"正在请求图片, 请稍后")
-            await self.direct_message_handler.on_message(message)
-        else:
-            await self.direct_message_handler.on_message(message)
+            return
+        if content:
+            if "yande" in content:
+                self.direct_message_handler.waiting_session[user.id] = WaitingSession(
+                    user_id=user.id,
+                    guild_id=message.guild_id,
+                    message_id=message.id,
+                    handler="direct_message_handler",
+                    service="booru_images",
+                    feature="yande"
+                )
+                await message.reply(content=f"正在请求图片, 请稍后")
+                await self.direct_message_handler.on_message(message)
+
+        await self.direct_message_handler.on_message(message)
         
 
 client: LouiseClient = None

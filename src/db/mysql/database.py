@@ -117,10 +117,11 @@ class LousieDatabase():
     
     def get_booru_tag(self, cn_name: str) -> BooruTag:
         try:
-            b: DbBooruTags = DbBooruTags.get(
-                DbBooruTags.cn_name == cn_name
+            tags: List[DbBooruTags] = DbBooruTags.select().where(
+                DbBooruTags.cn_name.contains(cn_name)
             )
-            if b:
+            if tags:
+                b = tags[0]
                 return BooruTag(
                     tag_id=b.tag_id,
                     origin_name=b.origin_name,
