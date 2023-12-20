@@ -20,7 +20,7 @@ DEFAULT_FILE_HANDLER = {
     # 要实例化的Handler
     "handler": TimedRotatingFileHandler,
     # 可选 Default to DEFAULT_FILE_FORMAT
-    "format": DEFAULT_FILE_FORMAT,
+    "format": DEFAULT_PRINT_FORMAT,
     # 可选 Default to DEBUG
     "level": logging.DEBUG,
     # 以下是Handler相关参数
