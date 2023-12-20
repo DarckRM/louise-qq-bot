@@ -18,11 +18,8 @@ db: MySQLDatabase = MySQLDatabase(
     user=CONF['db.user'],
     password=CONF['db.password'],
     charset="utf8mb4",
-    keepalives=1,  # 保持连接
-    keepalives_idle=60,  # 空闲时，每130秒保持连接连通
-    keepalives_interval=10,  # 没得到回应时，等待10秒重新尝试保持连通
-    keepalives_count=15,  # 尝试最多15次重新保持连通
-    autorollback=True
+    autorollback=True,
+    autoconnect=True,
 )
 
 class DbBooruImages(Model):
