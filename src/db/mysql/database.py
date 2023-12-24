@@ -3,6 +3,7 @@ import traceback
 from datetime import datetime
 from typing import Dict, List
 from peewee import DoesNotExist, MySQLDatabase, IntegerField, Model, CharField, OperationalError, TextField
+from playhouse.pool import PooledMySQLDatabase
 
 from botpy import logger
 
@@ -11,7 +12,7 @@ from src.model.constant import CHINA_TZ
 from src.model.db_model import BooruTag, LouiseBooruImage
 
 
-db: MySQLDatabase = MySQLDatabase(
+db: MySQLDatabase = PooledMySQLDatabase(
     database=CONF['db.name'],
     host=CONF['db.host'],
     port=CONF['db.port'],
@@ -20,6 +21,8 @@ db: MySQLDatabase = MySQLDatabase(
     charset="utf8mb4",
     autorollback=True,
     autoconnect=True,
+    stale_timeout=300,
+    max_connections=8
 )
 
 class DbBooruImages(Model):
