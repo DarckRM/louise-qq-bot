@@ -2,7 +2,7 @@ import traceback
 
 from datetime import datetime
 from typing import Dict, List
-from peewee import DoesNotExist, MySQLDatabase, IntegerField, Model, CharField, OperationalError, TextField
+from peewee import DoesNotExist, InterfaceError, MySQLDatabase, IntegerField, Model, CharField, OperationalError, TextField
 from playhouse.pool import PooledMySQLDatabase
 
 from botpy import logger
@@ -114,7 +114,7 @@ class LousieDatabase():
             DbBooruImages.insert_many(db_datas).on_conflict("IGNORE").execute()
             logger.info(f"写入 t_booru_images 成功: {len(db_datas)} 条记录")
             return len(db_datas)
-        except OperationalError as o_e:
+        except InterfaceError as o_e:
             self.db.connect()
         except Exception as e:
             logger.error(f"写入 t_booru_images 异常: {e}\n{traceback.format_exc()}")
@@ -136,7 +136,7 @@ class LousieDatabase():
                     producer=b.producer,
                     info=b.info
                 )
-        except OperationalError as o_e:
+        except InterfaceError as o_e:
             self.db.connect()
         except DoesNotExist as e:
             logger.warn(f"获取 booru_tag 记录不存在: {cn_name}") 
@@ -160,7 +160,7 @@ class LousieDatabase():
                     info=d.info
                 ))
             return booru_tags
-        except OperationalError as o_e:
+        except InterfaceError as o_e:
             self.db.connect()
         except Exception as e:
             logger.error(f"获取 BooruTag 列表失败: {e}\n{traceback.format_exc()}")
