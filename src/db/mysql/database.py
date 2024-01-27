@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Dict, List
 from peewee import DoesNotExist, InterfaceError, MySQLDatabase, IntegerField, Model, CharField, OperationalError, TextField
 from playhouse.pool import PooledMySQLDatabase
+from playhouse.shortcuts import RetryOperationlError
 
 from botpy import logger
 
@@ -11,8 +12,11 @@ from config.conf import CONF
 from src.model.constant import CHINA_TZ
 from src.model.db_model import BooruTag, LouiseBooruImage
 
+class RetryMySQLDatabase(RetryOperationlError, MySQLDatabase):
+    pass
 
-db: MySQLDatabase = PooledMySQLDatabase(
+
+db: MySQLDatabase = RetryMySQLDatabase(
     database=CONF['db.name'],
     host=CONF['db.host'],
     port=CONF['db.port'],
