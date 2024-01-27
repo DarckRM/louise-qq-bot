@@ -14,6 +14,7 @@ from botpy import logger
 from botpy.message import DirectMessage
 
 from src.utils.file_api import get_file_api
+from utils.string_tool import contain_chinese
 
 CACHE_YANDE: str = CACHE_PATH_IMAGES + "yande/"
 
@@ -92,7 +93,7 @@ class BooruImage(Servicer):
         louise_images: List[LouiseBooruImage] = []
 
         for cn_name in cn_names:
-            tag = db.get_booru_tag(cn_name)
+            tag = cn_name if not contain_chinese(cn_name) else db.get_booru_tag(cn_name)
             if not tag:
                 continue
             tags += tag.origin_name + '+'
