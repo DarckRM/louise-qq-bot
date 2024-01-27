@@ -3,7 +3,7 @@ import traceback
 from typing import Any, Callable, Dict, List, Set, Tuple
 
 from DownloadKit.mission import Mission
-from src.model.db_model import LouiseBooruImage
+from src.model.db_model import BooruTag, LouiseBooruImage
 from src.db.mysql.database import LousieDatabase, get_database
 from src.model.constant import CACHE_PATH, CACHE_PATH_IMAGES
 from src.http.http_client import get_http_client
@@ -14,7 +14,7 @@ from botpy import logger
 from botpy.message import DirectMessage
 
 from src.utils.file_api import get_file_api
-from utils.string_tool import contain_chinese
+from src.utils.string_tool import contain_chinese
 
 CACHE_YANDE: str = CACHE_PATH_IMAGES + "yande/"
 
@@ -93,7 +93,7 @@ class BooruImage(Servicer):
         louise_images: List[LouiseBooruImage] = []
 
         for cn_name in cn_names:
-            tag = cn_name if not contain_chinese(cn_name) else db.get_booru_tag(cn_name)
+            tag = default_tag(cn_name) if not contain_chinese(cn_name) else db.get_booru_tag(cn_name)
             if not tag:
                 continue
             tags += tag.origin_name + '+'
@@ -184,3 +184,13 @@ class BooruImage(Servicer):
             height=r["height"]
         )
         return image
+
+def default_tag(word: str):
+    return BooruTag(
+       tag_id=0,
+        origin_name=word,
+        cn_name=word,
+        alter_name=word,
+        producer="default",
+        info="default"
+    )
