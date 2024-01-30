@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional, Union
 import botpy
 from botpy.flags import Intents
 from botpy.message import DirectMessage
+from botpy import logger
 from src.model.enum import FeatureType
 from src.model.object import WaitingSession
 from src.service.servicer import Servicer
@@ -29,32 +30,6 @@ class LouiseClient(botpy.Client):
         attachments = message.attachments
         if not content and not attachments:
             return
-
-        user = message.author
-
-        if content == "find":
-            self.direct_message_handler.waiting_session[user.id] = WaitingSession(
-                user_id=user.id,
-                guild_id=message.guild_id,
-                message_id=message.id,
-                handler="direct_message_handler",
-                service="saucenao",
-                feature=content
-            )
-            await message.reply(content=f"请发送你需要搜索的图片吧")
-            return
-        if content:
-            if "yande" in content:
-                self.direct_message_handler.waiting_session[user.id] = WaitingSession(
-                    user_id=user.id,
-                    guild_id=message.guild_id,
-                    message_id=message.id,
-                    handler="direct_message_handler",
-                    service="booru_images",
-                    feature="yande"
-                )
-                await message.reply(content=f"正在请求图片, 请稍后")
-                await self.direct_message_handler.on_message(message)
 
         await self.direct_message_handler.on_message(message)
         

@@ -1,11 +1,18 @@
-from typing import Any, Callable
+from typing import Callable
+
+from botpy.message import DirectMessage
 
 
-class Feature(object):
-    def __init__(self, func: Callable) -> None:
-        self.func = func
-        pass
-
-    def __call__(self, *args: Any, **kwds: Any) -> Any:
-        self.func(*args, **kwds)
-        pass
+def on_command(cmd: str):
+    def decorator(invoke: Callable):
+        async def wrapper(*args):
+            message: DirectMessage = args[1]
+            if message.content.startswith(cmd):
+                if await invoke(message):
+                    return 0
+                else:
+                    return 1
+            else:
+                return -1
+        return wrapper
+    return decorator

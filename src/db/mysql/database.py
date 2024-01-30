@@ -1,4 +1,6 @@
+import threading
 import traceback
+import time
 
 from datetime import datetime
 from typing import Dict, List
@@ -165,6 +167,12 @@ class LousieDatabase():
         except Exception as e:
             logger.error(f"获取 BooruTag 列表失败: {e}\n{traceback.format_exc()}")
             return []
+    
+    def keep_connection(self):
+        while True:
+            self.db.execute_sql("SELECT 1")
+            time.sleep(3600)
+        
 
 database: LousieDatabase = None
 
@@ -173,6 +181,9 @@ def get_database() -> LousieDatabase:
     if database:
         return database
     database = LousieDatabase()
+
+    threading.Thread(target=database.keep_connection).start()
+    
     return database
 
 if __name__ == '__main__':

@@ -1,16 +1,15 @@
 from multiprocessing.dummy import Pool
 import time
 import traceback
-from typing import Dict, List
+from typing import Dict
 from botpy.message import DirectMessage
+from src.handler.waitting_session import get_session, pop_session
 from src.service.servicer import Servicer
 from botpy import logger
-from src.model.object import WaitingSession
 
 class DirectMessageHandler():
     def __init__(self) -> None:
         self.name = "direct_message_handler"
-        self.waiting_session: Dict[str, WaitingSession] = {}
         self.servicer_map: Dict[str, Servicer] = {}
 
         self.pool = Pool(6)
@@ -23,20 +22,24 @@ class DirectMessageHandler():
     async def on_message(self, message: DirectMessage):
         user = message.author
 
-        session = self.waiting_session.get(user.id, None)
+        for name, servicer in self.servicer_map.items():
+            result = await servicer.invoke(message)
+            if result >= 0:
+                logger.info(f"调用 {name}")
+                break
+
+        session = get_session(user.id)
         if not session:
             return
         
         servicer = self.servicer_map.get(session.service, None)
-        if not servicer:
-            return
 
         _, feature = servicer.get_feature(session.feature)
         try:
             await feature(message)
         except Exception as e:
             logger.error(f"执行功能异常: {e}\n{traceback.format_exc()}")
-        self.waiting_session.pop(user.id)
+        pop_session(user.id)
 
 
     def _handle_message(self):
